@@ -22,7 +22,7 @@ A continuación se presentan los accesos directos principales a las aplicaciones
 | **Streamlit App**        | Aplicación Cloud | Dashboard interactivo con georeferenciación, mapa de calor y motor prescriptivo regional. | [Lanzar App en Streamlit Cloud](https://concursodatosabiertocolombiaid8.streamlit.app/)     |
 | **Código en GitHub**    | Repositorio       | Código fuente del framework, landing page y configuraciones de MLOps.                     | [Ver Repositorio en GitHub](https://feibertciin.github.io/ConcursoDatosAbiertoColombiaID8/) |
 | **Tutorial de Datos**    | Documentación    | Guía interactiva sobre el consumo e integración de APIs reales de datos.gov.co y Excel.  | [Ver Tutorial Interactivo (HTML)](<Tutorial%20Redes%20Neuronales/Tutorial%204.html>)        |
-| **Modelamiento ML**      | Jupyter Notebooks | 18 cuadernos documentados detalladamente (ETL, EDA, AutoML, XGBoost, SHAP, LIME).          | [Explorar Cuadernos (/notebooks)](notebooks/)                                               |
+| **Modelamiento ML**      | Jupyter Notebooks | 18 cuadernos documentados detalladamente ([ETL, EDA, AutoML, XGBoost, SHAP, LIME).          | [Explorar Cuadernos (/notebooks)](notebooks/](https://github.com/feibertciin/ConcursoDatosAbiertoColombiaID8/tree/main/notebooks))                                               |
 | **Engine de Inferencia** | Django Software   | Servidor web local de predicciones masivas por CSV/API con exportación de reportes PDF.   | [Explorar Módulo (/Software)](Software/)                                                   |
 
 ---
