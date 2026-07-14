@@ -13,7 +13,15 @@ Framework Inteligente de Machine Learning Multimodelo para Analítica Predictiva
 
 ---
 
+## 🔗 Enlaces del Proyecto
+
+* **Link de Streamlit**: [https://concursodatosabiertocolombiaid8.streamlit.app/](https://concursodatosabiertocolombiaid8.streamlit.app/)
+* **Link de GitHub**: [https://feibertciin.github.io/ConcursoDatosAbiertoColombiaID8/](https://feibertciin.github.io/ConcursoDatosAbiertoColombiaID8/)
+
+---
+
 ## 🏗️ Arquitectura del Sistema
+
 El proyecto está construido utilizando **Clean Architecture** (Arquitectura Hexagonal), separando estrictamente la lógica de dominio de las dependencias externas (bases de datos, frameworks de interfaz y librerías de ML).
 
 ```
@@ -32,43 +40,49 @@ Framework-ML-SNIES/
 ---
 
 ## 📊 Resultados de Entrenamiento
+
 Durante el pipeline de entrenamiento automatizado, obtuvimos las siguientes métricas comparativas:
 
-| Modelo | Accuracy | Precision | Recall | F1-Score |
-| :--- | :---: | :---: | :---: | :---: |
+| Modelo                     |    Accuracy    |    Precision    |     Recall     |    F1-Score    |
+| :------------------------- | :-------------: | :-------------: | :-------------: | :-------------: |
 | **XGBoost (Activo)** | **93.0%** | **81.2%** | **76.5%** | **78.8%** |
-| RandomForest | 92.0% | 80.0% | 70.6% | 75.0% |
-| LightGBM | 92.5% | 80.6% | 73.5% | 76.9% |
-| GradientBoosting | 93.0% | 85.7% | 70.6% | 77.4% |
+| RandomForest               |      92.0%      |      80.0%      |      70.6%      |      75.0%      |
+| LightGBM                   |      92.5%      |      80.6%      |      73.5%      |      76.9%      |
+| GradientBoosting           |      93.0%      |      85.7%      |      70.6%      |      77.4%      |
 
 ---
 
 ## 🛠️ Instalación y Uso
 
 ### 1. Clonar el repositorio y acceder a la carpeta
+
 ```bash
 git clone https://github.com/usuario/Framework-ML-SNIES.git
 cd Framework-ML-SNIES
 ```
 
 ### 2. Instalar dependencias
+
 ```bash
 pip install -r requirements.txt
 pip install -e .
 ```
 
 ### 3. Ejecutar inicialización de Base de Datos y ETL
+
 ```bash
 python -m src.infrastructure.database.init_db
 python -m src.application.training
 ```
 
 ### 4. Lanzar la aplicación Streamlit
+
 ```bash
 streamlit run app.py
 ```
 
 ### 5. Lanzar la API FastAPI
+
 ```bash
 uvicorn api.main:app --reload
 ```
@@ -78,11 +92,13 @@ uvicorn api.main:app --reload
 ## 📖 Autores y Citación
 
 ### Investigadores:
+
 - **Feibert Alirio Guzmán Pérez** - Magíster en Educación, Especialista en Gerencia Informática, Ingeniero de Sistemas. Corporación Universitaria Lasallista (UNILASALLISTA), Facultad de Ingenierías, Grupo de Investigación G-3IN.
 - **Jonathan Berthel Castro** - Magíster en Ingeniería con Énfasis en Ingeniería de Sistemas y Computación, Especialista en BD y Telecomunicaciones. Corporación Universitaria Lasallista (UNILASALLISTA), Facultad de Ingenierías, Grupo de Investigación G-3IN.
 - **Doris María Vásquez González** - Administradora de Empresas y Finanzas, Tecnóloga en Gestión Empresarial y Financiera, Técnica en Almacenamiento y Distribución Logística. Contratista del DANE e Independiente.
 
 ### Cómo Citar:
+
 Para citar este framework en investigaciones científicas o publicaciones académicas:
 
 ```bibtex
