@@ -23,7 +23,7 @@ A continuación se presentan los accesos directos principales a las aplicaciones
 | **Código en GitHub**    | Repositorio       | Código fuente del framework, landing page y configuraciones de MLOps.                     | [Ver Repositorio en GitHub](https://feibertciin.github.io/ConcursoDatosAbiertoColombiaID8/) |
 | **Engine de Inferencia** | Django Software   | Servidor web local de predicciones masivas por CSV/API con exportación de reportes PDF.   | [Explorar Módulo (/Software)](Software/)                                                   |
 | **Presentación** | Soporte   | Presentación del proyecto.   | [Ver](https://drive.google.com/file/d/1SPHocT8hiw10sWt7krW29HEDCH2NYCKb/view?usp=drive_link)                                                   |
-| **Presentación** | Soporte   | Presentación del proyecto.   | [Ver](https://drive.google.com/file/d/1SPHocT8hiw10sWt7krW29HEDCH2NYCKb/view?usp=drive_link)                                                   |
+| **Soporte Técnico** | Documento   | Informe del proyecto.   | [Ver]([https://drive.google.com/file/d/1SPHocT8hiw10sWt7krW29HEDCH2NYCKb/view?usp=drive_link](https://docs.google.com/document/d/140gnSxJ5CotqG7DWM9EKO46qHcn_PNh2/edit?usp=drive_link&ouid=107643151803452107423&rtpof=true&sd=true)                                                   |
 ---
 
 ## 🏗️ Arquitectura del Sistema
