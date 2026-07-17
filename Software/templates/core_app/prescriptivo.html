@@ -1,0 +1,144 @@
+{% extends "core_app/base.html" %}
+{% block title %}Recomendaciones Prescriptivas{% endblock %}
+{% block page_title %}📋 Plan de Acción y Recomendaciones Prescriptivas{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Plan de Acción y Recomendaciones Prescriptivas</h2>
+    <p>Directrices e intervenciones de política pública generadas a partir de microdatos de deserción y cobertura de becas — API Datos Abiertos Colombia.</p>
+</div>
+
+<!-- 3 Pilares -->
+<div class="grid-3 fade-in" style="margin-bottom:22px;">
+    <div class="card" style="border-color:rgba(239,68,68,0.2);">
+        <div style="font-size:28px;margin-bottom:12px;">📚</div>
+        <div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Acción 1 — Académica</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px;">Tutorías Focalizadas Obligatorias</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Asignar tutores de manera automatizada a estudiantes que presenten más de 1 materia reprobada en los cortes del semestre. La asignación debe hacerse en las primeras 3 semanas detectado el riesgo.</div>
+        <div class="mt-4">
+            <span class="badge badge-danger">Alta Prioridad</span>
+            <span class="badge badge-info" style="margin-left:6px;">AUTOMÁTICA</span>
+        </div>
+    </div>
+    <div class="card" style="border-color:rgba(245,158,11,0.2);">
+        <div style="font-size:28px;margin-bottom:12px;">💰</div>
+        <div style="font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Acción 2 — Financiera</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px;">Subsidio de Alimentación y Transporte</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Generar alertas prioritarias para bienestar estudiantil orientadas a alumnos de estratos 1 y 2 con ingresos menores a 1.5 SMLV. Cruce directo con base de becas disponibles.</div>
+        <div class="mt-4">
+            <span class="badge badge-warning">Media Prioridad</span>
+        </div>
+    </div>
+    <div class="card" style="border-color:rgba(16,185,129,0.2);">
+        <div style="font-size:28px;margin-bottom:12px;">🎓</div>
+        <div style="font-size:11px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Acción 3 — Curricular</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px;">Rediseño Curricular Inteligente</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Monitorear materias con tasas de pérdida históricas superiores al 35% para restructurar el microcurrículo o flexibilizar los pre-requisitos académicos del programa.</div>
+        <div class="mt-4">
+            <span class="badge badge-success">Mejora Continua</span>
+        </div>
+    </div>
+</div>
+
+<!-- Scatter Chart + Table -->
+<div class="grid-21 fade-in-2" style="margin-bottom:22px;">
+    <div class="card">
+        <div class="section-title">📊 Cobertura de Becas vs. Tasa de Deserción Histórica</div>
+        <div class="chart-box">
+            <canvas id="scatterPresc" height="300"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">🗺️ Focalización Regional</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            {% for r in prescriptive_data %}
+            <div style="padding:10px 14px;background:rgba(15,23,42,0.7);border-radius:8px;border:1px solid var(--border);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <span style="font-size:12px;font-weight:700;color:var(--text-main);">{{ r.departamento }}</span>
+                    <span class="badge {% if r.tasa_desercion_historica > 22 %}badge-danger{% elif r.tasa_desercion_historica > 18 %}badge-warning{% else %}badge-success{% endif %}">
+                        {{ r.tasa_desercion_historica }}% deserción
+                    </span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-muted);">
+                    <span>Becas: {{ r.cobertura_becas }}%</span>
+                    <span>Presupuesto: ${{ r.presupuesto_asignado_millones }}M</span>
+                </div>
+                <div class="risk-bar-track" style="margin-top:6px;">
+                    <div class="risk-bar-fill" style="width:{{ r.tasa_desercion_historica }}%;background:{% if r.tasa_desercion_historica > 22 %}#ef4444{% elif r.tasa_desercion_historica > 18 %}#f59e0b{% else %}#10b981{% endif %};"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Line trend chart -->
+<div class="card fade-in-3">
+    <div class="section-title">📈 Tendencia Regional — Deserción vs. Cobertura de Becas</div>
+    <div class="chart-box">
+        <canvas id="linePresc" height="140"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const scatter = {{ scatter_json|safe }};
+const labels  = scatter.map(d => d.label);
+const MAX_SIZE = Math.max(...scatter.map(d => d.size));
+
+// Scatter chart
+new Chart(document.getElementById('scatterPresc'), {
+    type: 'bubble',
+    data: {
+        datasets: [{
+            label: 'Departamentos',
+            data: scatter.map(d => ({
+                x: d.x, y: d.y,
+                r: Math.max((d.size / MAX_SIZE) * 30, 6),
+                label: d.label
+            })),
+            backgroundColor: scatter.map(d =>
+                d.y > 22 ? 'rgba(239,68,68,0.6)' : d.y > 18 ? 'rgba(245,158,11,0.6)' : 'rgba(16,185,129,0.6)'
+            ),
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => {
+                        const d = scatter[ctx.dataIndex];
+                        return [`${d.label}`, `Becas: ${d.x}%`, `Deserción: ${d.y}%`];
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { title: { display: true, text: 'Cobertura de Becas (%)', color: '#64748b' }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { title: { display: true, text: 'Tasa de Deserción (%)', color: '#64748b' },  ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+    }
+});
+
+// Line chart
+new Chart(document.getElementById('linePresc'), {
+    type: 'line',
+    data: {
+        labels,
+        datasets: [
+            { label: 'Deserción Histórica (%)', data: scatter.map(d => d.y), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.07)', fill: true, tension: 0.3, pointRadius: 5, borderWidth: 2 },
+            { label: 'Cobertura de Becas (%)',  data: scatter.map(d => d.x), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.07)',  fill: true, tension: 0.3, pointRadius: 5, borderWidth: 2 },
+        ]
+    },
+    options: {
+        plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+        scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { ticks: { color: '#64748b', callback: v => v + '%' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+    }
+});
+</script>
+{% endblock %}

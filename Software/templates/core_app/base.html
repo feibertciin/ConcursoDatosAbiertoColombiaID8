@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Framework ML SNIES{% endblock %} — Plataforma Analítica</title>
+    <meta name="description" content="Framework Inteligente de Machine Learning para la Predicción de Permanencia Estudiantil — SNIES Colombia">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --bg-main:    #07090f;
+            --bg-sidebar: #0b0f1a;
+            --bg-card:    rgba(15, 23, 42, 0.85);
+            --bg-card2:   rgba(20, 30, 55, 0.6);
+            --border:     rgba(255,255,255,0.07);
+            --accent:     #38bdf8;
+            --accent2:    #818cf8;
+            --success:    #10b981;
+            --danger:     #ef4444;
+            --warning:    #f59e0b;
+            --text-main:  #f1f5f9;
+            --text-muted: #64748b;
+            --text-dim:   #94a3b8;
+            --sidebar-w:  230px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* ---- SIDEBAR ---- */
+        #sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        #sidebar::-webkit-scrollbar { display: none; }
+
+        .sidebar-logo {
+            padding: 22px 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-logo .logo-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .sidebar-logo h1 {
+            font-size: 13px; font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+        .sidebar-logo p {
+            font-size: 10px; color: var(--text-muted);
+            margin-top: 2px; line-height: 1.4;
+        }
+
+        .sidebar-section {
+            padding: 14px 12px 6px;
+            font-size: 9px; font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.1em;
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            margin: 2px 8px;
+            font-size: 12.5px; font-weight: 500;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.18s;
+            position: relative;
+        }
+        .nav-item:hover {
+            background: rgba(56,189,248,0.07);
+            color: var(--text-main);
+        }
+        .nav-item.active {
+            background: rgba(56,189,248,0.12);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute; left: 0; top: 20%; bottom: 20%;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent);
+        }
+        .nav-item i { width: 16px; text-align: center; font-size: 13px; }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 10px; color: var(--text-muted);
+        }
+        .sidebar-footer .badge-contest {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(129,140,248,0.12);
+            border: 1px solid rgba(129,140,248,0.25);
+            border-radius: 20px;
+            color: var(--accent2);
+            font-size: 9px; font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        /* ---- MAIN CONTENT ---- */
+        #main-content {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* ---- TOPBAR ---- */
+        #topbar {
+            height: 56px;
+            background: rgba(7,9,15,0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            position: sticky; top: 0; z-index: 90;
+        }
+        #topbar .page-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--text-main);
+        }
+        #topbar .topbar-right {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .topbar-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px; font-weight: 600;
+            border: 1px solid;
+        }
+        .badge-live {
+            background: rgba(16,185,129,0.1);
+            color: var(--success);
+            border-color: rgba(16,185,129,0.25);
+        }
+        .badge-data {
+            background: rgba(56,189,248,0.08);
+            color: var(--accent);
+            border-color: rgba(56,189,248,0.2);
+        }
+
+        /* ---- PAGE BODY ---- */
+        .page-body {
+            flex: 1;
+            padding: 28px 32px;
+        }
+
+        /* ---- CARDS ---- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px 24px;
+            backdrop-filter: blur(10px);
+        }
+        .card-sm {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+
+        /* ---- KPI CARDS ---- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56,189,248,0.3);
+            box-shadow: 0 8px 30px rgba(56,189,248,0.08);
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        }
+        .kpi-card.blue::before   { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+        .kpi-card.green::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+        .kpi-card.red::before    { background: linear-gradient(90deg, #ef4444, #f97316); }
+        .kpi-card.purple::before { background: linear-gradient(90deg, #818cf8, #a78bfa); }
+
+        .kpi-label {
+            font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-size: 28px; font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .kpi-sub {
+            font-size: 10px; color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .kpi-icon {
+            position: absolute; right: 18px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 28px; opacity: 0.08;
+        }
+
+        /* ---- SECTION TITLE ---- */
+        .section-title {
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px; margin-bottom: 18px;
+        }
+
+        /* ---- TABLES ---- */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .data-table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table td {
+            padding: 12px 14px;
+            color: var(--text-dim);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .data-table td.bold { font-weight: 600; color: var(--text-main); }
+
+        /* ---- BADGES ---- */
+        .badge {
+            display: inline-flex; align-items: center;
+            padding: 3px 9px; border-radius: 20px;
+            font-size: 9.5px; font-weight: 700;
+            border: 1px solid;
+        }
+        .badge-danger  { background: rgba(239,68,68,0.12); color: #ef4444; border-color: rgba(239,68,68,0.25); }
+        .badge-success { background: rgba(16,185,129,0.12); color: #10b981; border-color: rgba(16,185,129,0.25); }
+        .badge-warning { background: rgba(245,158,11,0.12); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+        .badge-info    { background: rgba(56,189,248,0.10); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
+
+        /* ---- FORM INPUTS ---- */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 11px; font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .form-control {
+            width: 100%;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: rgba(56,189,248,0.5); }
+        select.form-control option { background: #0b0f1a; }
+
+        /* ---- BUTTONS ---- */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #fff;
+        }
+        .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .btn-outline:hover { border-color: rgba(56,189,248,0.4); color: var(--accent); }
+        .btn-danger {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #ef4444;
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+        /* ---- GRID UTILS ---- */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-12 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+        .space-y > * + * { margin-top: 20px; }
+        .mt-4 { margin-top: 16px; }
+        .mt-6 { margin-top: 24px; }
+
+        /* ---- PAGE HEADER ---- */
+        .page-header { margin-bottom: 26px; }
+        .page-header h2 {
+            font-size: 22px; font-weight: 800;
+            background: linear-gradient(90deg, #f1f5f9 40%, #64748b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        .page-header p { font-size: 13px; color: var(--text-muted); }
+
+        /* ---- CHART CONTAINER ---- */
+        .chart-box {
+            background: rgba(7,9,15,0.6);
+            border-radius: 10px;
+            padding: 16px;
+            position: relative;
+        }
+        .chart-label {
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* ---- PROGRESS BAR ---- */
+        .risk-bar-track {
+            height: 10px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        /* ---- ALERT BANNER ---- */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            border: 1px solid;
+            font-size: 13px;
+        }
+        .alert-info    { background: rgba(56,189,248,0.06); border-color: rgba(56,189,248,0.2); color: #93c5fd; }
+        .alert-success { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); color: #6ee7b7; }
+        .alert-danger  { background: rgba(239,68,68,0.06);  border-color: rgba(239,68,68,0.2);  color: #fca5a5; }
+
+        /* ---- ANIMATIONS ---- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeInUp 0.4s ease both; }
+        .fade-in-2 { animation: fadeInUp 0.4s ease 0.1s both; }
+        .fade-in-3 { animation: fadeInUp 0.4s ease 0.2s both; }
+
+        /* ---- SCROLLBAR ---- */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+        /* ---- SPINNER ---- */
+        .spinner {
+            width: 22px; height: 22px;
+            border: 2px solid rgba(56,189,248,0.2);
+            border-top-color: #38bdf8;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🎓</div>
+            <h1>Framework ML SNIES</h1>
+            <p>Plataforma Analítica de Permanencia</p>
+        </div>
+
+        <div class="sidebar-section">Análisis</div>
+        <a href="{% url 'inicio' %}" class="nav-item {% if active_page == 'inicio' %}active{% endif %}">
+            <i class="fa-solid fa-rocket"></i> Inicio
+        </a>
+        <a href="{% url 'dashboard_home' %}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i> Tablero de Control
+        </a>
+        <a href="{% url 'eda' %}" class="nav-item {% if active_page == 'eda' %}active{% endif %}">
+            <i class="fa-solid fa-magnifying-glass-chart"></i> Análisis Exploratorio
+        </a>
+
+        <div class="sidebar-section">Machine Learning</div>
+        <a href="{% url 'prediccion' %}" class="nav-item {% if active_page == 'prediccion' %}active{% endif %}">
+            <i class="fa-solid fa-crosshairs"></i> Predicción Individual
+        </a>
+        <a href="{% url 'modelos' %}" class="nav-item {% if active_page == 'modelos' %}active{% endif %}">
+            <i class="fa-solid fa-scale-balanced"></i> Comparación de Modelos
+        </a>
+        <a href="{% url 'xai' %}" class="nav-item {% if active_page == 'xai' %}active{% endif %}">
+            <i class="fa-solid fa-shield-halved"></i> Explicabilidad (XAI)
+        </a>
+
+        <div class="sidebar-section">Estrategia</div>
+        <a href="{% url 'curricular' %}" class="nav-item {% if active_page == 'curricular' %}active{% endif %}">
+            <i class="fa-solid fa-graduation-cap"></i> Pertinencia Curricular
+        </a>
+        <a href="{% url 'prescriptivo' %}" class="nav-item {% if active_page == 'prescriptivo' %}active{% endif %}">
+            <i class="fa-solid fa-clipboard-list"></i> Recomendaciones
+        </a>
+
+        <div class="sidebar-footer">
+            <div class="badge-contest">🏆 Datos al Ecosistema 2026</div>
+            <p>UFHEC · Datos Abiertos Colombia</p>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div id="main-content">
+        <!-- TOPBAR -->
+        <header id="topbar">
+            <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+            <div class="topbar-right">
+                <span class="topbar-badge badge-live">
+                    <i class="fa-solid fa-circle" style="font-size:6px; margin-right:4px;"></i> Datos Activos
+                </span>
+                <span class="topbar-badge badge-data">
+                    <i class="fa-solid fa-database" style="font-size:9px; margin-right:4px;"></i> SNIES · DANE · OLE
+                </span>
+            </div>
+        </header>
+
+        <!-- PAGE BODY -->
+        <div class="page-body">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- FOOTER -->
+        <footer style="border-top:1px solid var(--border); padding:14px 32px; font-size:10px; color:var(--text-muted); text-align:center;">
+            © 2026 Framework ML SNIES — UFHEC · Plataforma Analítica de Permanencia Estudiantil
+        </footer>
+    </div>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

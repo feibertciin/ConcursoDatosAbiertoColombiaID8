@@ -1,0 +1,154 @@
+{% extends "core_app/base.html" %}
+{% block title %}Pertinencia Curricular{% endblock %}
+{% block page_title %}📈 Pertinencia Curricular — Mercado Laboral{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Alineación Curricular y Pertinencia con el Sector Productivo</h2>
+    <p>Cruces analíticos entre la oferta educativa universitaria y la inserción de graduados en el mercado laboral real (fuente: OLE).</p>
+</div>
+
+<div class="grid-2 fade-in" style="margin-bottom:20px;">
+    <div class="card">
+        <div class="section-title">💰 Salario de Enganche Promedio por Programa (COP)</div>
+        <div class="chart-box">
+            <canvas id="salarioChart" height="280"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">📊 Tasa de Empleabilidad vs. Tasa de Deserción</div>
+        <div class="chart-box">
+            <canvas id="empleChart" height="280"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in-2">
+    <div class="section-title">📋 Tabla de Pertinencia Curricular — Datos OLE</div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Programa Académico</th>
+                    <th style="text-align:center;">Salario de Enganche</th>
+                    <th style="text-align:center;">Empleabilidad %</th>
+                    <th style="text-align:center;">Deserción %</th>
+                    {% if has_satisfaccion %}<th style="text-align:center;">Satisfacción</th>{% endif %}
+                    {% if has_acreditacion %}<th>Acreditación</th>{% endif %}
+                    <th>Pertinencia</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in curriculum %}
+                <tr>
+                    <td class="bold">{{ r.programa_academico }}</td>
+                    <td style="text-align:center;font-family:monospace;color:#10b981;font-weight:700;">
+                        ${{ r.salario_enganche|floatformat:0 }}
+                    </td>
+                    <td style="text-align:center;">
+                        <span class="badge {% if r.tasa_empleabilidad >= 80 %}badge-success{% elif r.tasa_empleabilidad >= 70 %}badge-warning{% else %}badge-danger{% endif %}">
+                            {{ r.tasa_empleabilidad }}%
+                        </span>
+                    </td>
+                    <td style="text-align:center;">
+                        {% if r.tasa_desercion > 0 %}
+                        <span class="badge {% if r.tasa_desercion < 15 %}badge-success{% elif r.tasa_desercion < 25 %}badge-warning{% else %}badge-danger{% endif %}">
+                            {{ r.tasa_desercion }}%
+                        </span>
+                        {% else %}<span style="color:var(--text-muted);font-size:11px;">—</span>{% endif %}
+                    </td>
+                    {% if has_satisfaccion %}
+                    <td style="text-align:center;color:#818cf8;font-weight:600;">{{ r.indice_satisfaccion|default:"—" }}</td>
+                    {% endif %}
+                    {% if has_acreditacion %}
+                    <td>
+                        <span class="badge {% if r.nivel_acreditacion == 'ALTA CALIDAD' %}badge-success{% else %}badge-info{% endif %}">
+                            {{ r.nivel_acreditacion|default:"—" }}
+                        </span>
+                    </td>
+                    {% endif %}
+                    <td>
+                        {% if r.tasa_empleabilidad >= 80 and r.tasa_desercion < 20 %}
+                        <span class="badge badge-success">Alta Pertinencia</span>
+                        {% elif r.tasa_empleabilidad >= 70 %}
+                        <span class="badge badge-warning">Media Pertinencia</span>
+                        {% else %}
+                        <span class="badge badge-danger">Revisar Currículo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Sin datos curriculares disponibles.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Insight Card -->
+<div class="card fade-in-3" style="margin-top:20px;background:linear-gradient(135deg,rgba(16,185,129,0.04),rgba(56,189,248,0.04));border-color:rgba(16,185,129,0.15);">
+    <div class="section-title" style="color:#10b981;">💡 Hallazgos de Pertinencia Curricular</div>
+    <div class="grid-3" style="gap:14px;">
+        <div style="padding:14px;background:rgba(15,23,42,0.5);border-radius:10px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:6px;">ALTA EMPLEABILIDAD</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Los programas del área de salud presentan las tasas de empleabilidad más altas (&gt;90%). La demanda laboral alineada reduce la deserción por desmotivación vocacional.</div>
+        </div>
+        <div style="padding:14px;background:rgba(15,23,42,0.5);border-radius:10px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:6px;">BRECHA SALARIAL</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Los programas de humanidades presentan brechas salariales de hasta 2.5x respecto a ingeniería. Esta percepción afecta el ánimo de continuación del estudiante.</div>
+        </div>
+        <div style="padding:14px;background:rgba(15,23,42,0.5);border-radius:10px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:#818cf8;margin-bottom:6px;">ACCIÓN PRESCRIPTIVA</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Se recomienda rediseñar las mallas curriculares de los programas con &lt;70% de empleabilidad para incluir competencias transversales digitales y liderazgo.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const chart = {{ chart_json|safe }};
+const COLORS = ['#38bdf8','#818cf8','#10b981','#f59e0b','#ef4444'];
+
+new Chart(document.getElementById('salarioChart'), {
+    type: 'bar',
+    data: {
+        labels: chart.labels,
+        datasets: [{
+            label: 'Salario Enganche (COP)',
+            data: chart.salarios,
+            backgroundColor: chart.labels.map((_,i) => COLORS[i%COLORS.length]+'99'),
+            borderColor:     chart.labels.map((_,i) => COLORS[i%COLORS.length]),
+            borderWidth: 1, borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { color:'#64748b', callback: v => '$'+v.toLocaleString('es-CO') }, grid: { color:'rgba(255,255,255,0.04)' } },
+            y: { ticks: { color:'#94a3b8', font:{family:'Inter',size:11} }, grid: { display:false } }
+        }
+    }
+});
+
+new Chart(document.getElementById('empleChart'), {
+    type: 'bar',
+    data: {
+        labels: chart.labels,
+        datasets: [
+            { label: 'Empleabilidad (%)', data: chart.empleabilidad, backgroundColor: 'rgba(16,185,129,0.6)', borderRadius:5 },
+            { label: 'Deserción (%)',     data: chart.desercion,     backgroundColor: 'rgba(239,68,68,0.5)',   borderRadius:5 },
+        ]
+    },
+    options: {
+        plugins: { legend: { labels: { color:'#94a3b8', font:{family:'Inter',size:11} } } },
+        scales: {
+            x: { ticks:{ color:'#64748b' }, grid:{ color:'rgba(255,255,255,0.04)' } },
+            y: { min:0, max:100, ticks:{ color:'#64748b', callback:v=>v+'%' }, grid:{ color:'rgba(255,255,255,0.04)' } }
+        }
+    }
+});
+</script>
+{% endblock %}

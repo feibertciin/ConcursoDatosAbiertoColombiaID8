@@ -1,0 +1,87 @@
+/* Custom CSS overrides for Jazzmin Admin Login - IBM/Oracle Corporate style */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Styles for Login Page */
+body.login-page {
+    background-color: #0c101a !important;
+    background-image: radial-gradient(circle at 50% 50%, #151d30 0%, #0c101a 100%) !important;
+    font-family: 'Inter', sans-serif !important;
+    color: #f8fafc !important;
+}
+
+.login-box {
+    width: 440px !important;
+}
+
+.login-box .card {
+    background-color: #111625 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 4px !important; /* Sharp corporate edges */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.login-box .card-header {
+    border-bottom: 1px solid #1e293b !important;
+    text-align: center !important;
+    padding: 25px 0 !important;
+    background-color: #0f1422 !important;
+}
+
+.login-box .login-logo img {
+    max-height: 80px !important;
+    margin-bottom: 10px !important;
+    filter: none !important;
+}
+
+.login-box .card-body {
+    background: transparent !important;
+    padding: 35px 30px !important;
+}
+
+.login-box .form-control {
+    background-color: #171e2e !important;
+    border: 1px solid #334155 !important;
+    color: #ffffff !important;
+    border-radius: 4px !important;
+    padding: 10px 15px !important;
+    font-size: 13px !important;
+}
+
+.login-box .form-control:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+.login-box .btn-primary {
+    background-color: #2563eb !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    letter-spacing: 0px !important;
+    padding: 10px !important;
+    font-size: 13px !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.login-box .btn-primary:hover {
+    background-color: #1d4ed8 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.login-box .login-box-msg {
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    margin-bottom: 15px !important;
+}
+
+.login-box a {
+    color: #3b82f6 !important;
+    font-size: 11px !important;
+}
+
+.login-box a:hover {
+    color: #60a5fa !important;
+    text-decoration: underline !important;
+}

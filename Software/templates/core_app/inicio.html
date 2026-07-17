@@ -1,0 +1,125 @@
+{% extends "core_app/base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block page_title %}🚀 Inicio — Framework ML SNIES{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Framework Inteligente de Machine Learning Multimodelo</h2>
+    <p>Predicción de Permanencia Estudiantil · Concurso Datos al Ecosistema 2026</p>
+</div>
+
+<!-- Banner Premio -->
+<div class="fade-in" style="background:linear-gradient(135deg,rgba(56,189,248,0.06),rgba(129,140,248,0.1)); border:1px solid rgba(56,189,248,0.18); border-left: 4px solid #38bdf8; border-radius:12px; padding:20px 24px; margin-bottom:26px;">
+    <div style="font-size:11px;font-weight:700;color:#38bdf8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">🏆 Proyecto Postulado · Datos al Ecosistema 2026</div>
+    <p style="font-size:13px;color:#cbd5e1;line-height:1.6;">
+        Esta solución tecnológica de <b style="color:#f1f5f9">analítica predictiva y prescriptiva</b> integra datos abiertos oficiales de
+        <b style="color:#38bdf8">SNIES</b> (Ministerio de Educación), <b style="color:#818cf8">DANE</b> (Variables Socioeconómicas) y
+        <b style="color:#10b981">OLE</b> (Observatorio Laboral para la Educación) con inteligencia artificial explicable para combatir la deserción universitaria.
+    </p>
+</div>
+
+<!-- Feature Cards -->
+<div class="grid-2 fade-in-2" style="margin-bottom:26px;">
+    <div class="card">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">¿Por qué esta solución es competitiva?</div>
+        <div class="space-y">
+            {% for feature in features %}
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:30px;height:30px;background:rgba(56,189,248,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;">{{ feature.icon }}</div>
+                <div>
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text-main);margin-bottom:2px;">{{ feature.title }}</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);line-height:1.5;">{{ feature.desc }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:30px;height:30px;background:rgba(56,189,248,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🏛️</div>
+                <div>
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text-main);">Arquitectura Limpia y Modular</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);">Construido siguiendo DDD y arquitectura hexagonal para máxima mantenibilidad empresarial.</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:30px;height:30px;background:rgba(16,185,129,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📡</div>
+                <div>
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text-main);">Datos Abiertos Reales Integrados</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);">Cruce analítico de microdatos SNIES + DANE + OLE para perfilar condiciones en tiempo real.</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:30px;height:30px;background:rgba(129,140,248,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🛡️</div>
+                <div>
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text-main);">Inteligencia Artificial Explicable (XAI)</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);">Justifica cada predicción con SHAP y Feature Importance para transparencia en políticas públicas.</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:30px;height:30px;background:rgba(245,158,11,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📋</div>
+                <div>
+                    <div style="font-size:12.5px;font-weight:600;color:var(--text-main);">Enfoque Prescriptivo</div>
+                    <div style="font-size:11.5px;color:var(--text-muted);">No solo detecta el riesgo — recomienda acciones inmediatas: becas, tutorías, ajustes curriculares.</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">🔌 Consumo de API — Datos Abiertos Colombia</div>
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;line-height:1.5;">
+            El framework se comunica con <a href="https://www.datos.gov.co" target="_blank" style="color:#38bdf8;">datos.gov.co</a> mediante la API SODA oficial para consultar microdatos de educación y demografía en tiempo real.
+        </p>
+        <div style="background:rgba(7,9,15,0.8);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:11.5px;color:#94a3b8;line-height:1.7;overflow-x:auto;">
+            <span style="color:#818cf8"># API Socrata (SODA) — Datos Abiertos Colombia</span><br>
+            <span style="color:#38bdf8">import</span> requests, pandas <span style="color:#38bdf8">as</span> pd<br><br>
+            API = <span style="color:#a3e635">"https://www.datos.gov.co/resource/upr9-nkiz.json"</span><br><br>
+            <span style="color:#38bdf8">def</span> <span style="color:#fbbf24">cargar_datos</span>(limit=<span style="color:#f97316">5000</span>):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;r = requests.get(API, params={<span style="color:#a3e635">"$limit"</span>: limit})<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#38bdf8">return</span> pd.DataFrame(r.json()) <span style="color:#818cf8">if</span> r.ok <span style="color:#818cf8">else</span> pd.DataFrame()
+        </div>
+        <div class="mt-4 alert alert-info" style="font-size:11.5px;">
+            💡 <b>Sincronización:</b> El pipeline ETL ejecuta este proceso asíncronamente, limpia e ingesta los datos directamente en la base de datos del modelo.
+        </div>
+
+        <!-- Quick navigation -->
+        <div class="mt-4" style="display:flex;flex-wrap:wrap;gap:8px;">
+            <a href="{% url 'dashboard_home' %}" class="btn btn-primary" style="font-size:11.5px;padding:8px 16px;">
+                <i class="fa-solid fa-chart-line"></i> Ver Tablero
+            </a>
+            <a href="{% url 'prediccion' %}" class="btn btn-outline" style="font-size:11.5px;padding:8px 16px;">
+                <i class="fa-solid fa-crosshairs"></i> Predecir Riesgo
+            </a>
+            <a href="{% url 'eda' %}" class="btn btn-outline" style="font-size:11.5px;padding:8px 16px;">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Explorar Datos
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Pipeline Cards -->
+<div class="fade-in-3">
+    <div class="card">
+        <div class="section-title">🔄 Pipeline CRISP-ML(Q) del Proyecto</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
+            {% for step in pipeline %}
+            <div style="text-align:center;padding:14px 8px;background:rgba(15,23,42,0.6);border:1px solid var(--border);border-radius:10px;">
+                <div style="font-size:20px;margin-bottom:6px;">{{ step.icon }}</div>
+                <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;">{{ step.phase }}</div>
+                <div style="font-size:10px;color:var(--text-muted);">{{ step.desc }}</div>
+            </div>
+            {% empty %}
+            {% for s in "123456" %}
+            <div style="text-align:center;padding:14px 8px;background:rgba(15,23,42,0.6);border:1px solid var(--border);border-radius:10px;">
+                {% if forloop.counter == 1 %}<div style="font-size:20px;margin-bottom:6px;">📊</div><div style="font-size:10px;font-weight:700;color:#38bdf8;margin-bottom:2px;text-transform:uppercase;">Comprensión</div><div style="font-size:10px;color:var(--text-muted);">Datos SNIES·DANE</div>
+                {% elif forloop.counter == 2 %}<div style="font-size:20px;margin-bottom:6px;">🔧</div><div style="font-size:10px;font-weight:700;color:#818cf8;margin-bottom:2px;text-transform:uppercase;">ETL</div><div style="font-size:10px;color:var(--text-muted);">Limpieza e ingesta</div>
+                {% elif forloop.counter == 3 %}<div style="font-size:20px;margin-bottom:6px;">⚙️</div><div style="font-size:10px;font-weight:700;color:#10b981;margin-bottom:2px;text-transform:uppercase;">Features</div><div style="font-size:10px;color:var(--text-muted);">Ingeniería de datos</div>
+                {% elif forloop.counter == 4 %}<div style="font-size:20px;margin-bottom:6px;">🤖</div><div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:2px;text-transform:uppercase;">Entrenamiento</div><div style="font-size:10px;color:var(--text-muted);">5 algoritmos ML</div>
+                {% elif forloop.counter == 5 %}<div style="font-size:20px;margin-bottom:6px;">📈</div><div style="font-size:10px;font-weight:700;color:#f97316;margin-bottom:2px;text-transform:uppercase;">Evaluación</div><div style="font-size:10px;color:var(--text-muted);">Métricas XAI</div>
+                {% else %}<div style="font-size:20px;margin-bottom:6px;">🚀</div><div style="font-size:10px;font-weight:700;color:#ef4444;margin-bottom:2px;text-transform:uppercase;">Producción</div><div style="font-size:10px;color:var(--text-muted);">API · Django · Streamlit</div>{% endif %}
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

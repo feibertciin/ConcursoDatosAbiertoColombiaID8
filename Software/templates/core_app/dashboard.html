@@ -1,0 +1,185 @@
+{% extends "core_app/base.html" %}
+{% block title %}Tablero de Control{% endblock %}
+{% block page_title %}📊 Tablero de Control — Distribución Geográfica{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Tablero de Control y Distribución Geográfica</h2>
+    <p>Estadísticas integradas directamente desde microdatos geolocalizados del territorio nacional colombiano.</p>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid fade-in">
+    <div class="kpi-card blue">
+        <div class="kpi-label">Estudiantes Analizados</div>
+        <div class="kpi-value">{{ total_students|default:"0" }}</div>
+        <div class="kpi-sub">Base activa procesada</div>
+        <i class="fa-solid fa-users kpi-icon"></i>
+    </div>
+    <div class="kpi-card red">
+        <div class="kpi-label">Alertas de Deserción</div>
+        <div class="kpi-value" style="background:linear-gradient(90deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ total_desertores|default:"0" }}</div>
+        <div class="kpi-sub">Estudiantes en riesgo</div>
+        <i class="fa-solid fa-triangle-exclamation kpi-icon"></i>
+    </div>
+    <div class="kpi-card green">
+        <div class="kpi-label">Promedio General</div>
+        <div class="kpi-value" style="background:linear-gradient(90deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ promedio_gral|default:"0.0" }}</div>
+        <div class="kpi-sub">Promedio acumulado</div>
+        <i class="fa-solid fa-chart-bar kpi-icon"></i>
+    </div>
+    <div class="kpi-card purple">
+        <div class="kpi-label">Tasa de Deserción</div>
+        <div class="kpi-value" style="background:linear-gradient(90deg,#818cf8,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ dropout_rate|default:"0.0" }}%</div>
+        <div class="kpi-sub">{{ n_programas }} programas activos</div>
+        <i class="fa-solid fa-percent kpi-icon"></i>
+    </div>
+</div>
+
+<!-- Mapa + Upload -->
+<div class="grid-21 fade-in-2" style="margin-bottom:24px;">
+    <div class="card">
+        <div class="section-title">📍 Distribución y Riesgo por Departamento</div>
+        <div id="colombia-map" style="height:420px;border-radius:10px;overflow:hidden;background:#0b0f1a;"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+        <!-- Upload Card -->
+        <div class="card">
+            <div class="section-title">⬆️ Ejecutar Análisis Predictivo</div>
+            <form method="post" action="{% url 'upload_csv' %}" enctype="multipart/form-data" id="upload-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Carga</label>
+                    <input type="text" name="title" class="form-control" placeholder="Ej: Cohorte 2025-2" value="Análisis Predictivo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Archivo CSV de Estudiantes</label>
+                    <input type="file" name="csv_file" accept=".csv" class="form-control" id="csv-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">— O — URL de API Abierta (SODA)</label>
+                    <input type="text" name="api_url" class="form-control" placeholder="https://www.datos.gov.co/resource/upr9-nkiz.json" id="api-url-input">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;" onclick="document.getElementById('upload-spinner').style.display='inline-block'">
+                    <span class="spinner" id="upload-spinner"></span>
+                    <i class="fa-solid fa-brain"></i> Ejecutar Modelos ML
+                </button>
+            </form>
+        </div>
+
+        <!-- Risk stats from density -->
+        <div class="card">
+            <div class="section-title">🗺️ Riesgo por Región</div>
+            <div id="region-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de Cargas -->
+<div class="card fade-in-3">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="section-title" style="margin:0;border:0;padding:0;">📋 Historial de Análisis Predictivos</div>
+        {% if uploads %}
+        <form method="post" action="{% url 'clear_history' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="font-size:11px;padding:6px 14px;" onclick="return confirm('¿Eliminar todo el historial?')">
+                <i class="fa-solid fa-trash"></i> Limpiar
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% if uploads %}
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre del Análisis</th>
+                    <th>Fecha</th>
+                    <th>Registros</th>
+                    <th>Alertas</th>
+                    <th>Tasa Riesgo</th>
+                    <th style="text-align:right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in uploads %}
+                <tr>
+                    <td class="bold">{{ u.title }}</td>
+                    <td>{{ u.uploaded_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ u.total_records|default:"0" }}</td>
+                    <td style="color:#ef4444;font-weight:700;">{{ u.predicted_dropouts|default:"0" }}</td>
+                    <td>
+                        {% if u.total_records > 0 %}
+                        <span class="badge badge-warning">{{ u.predicted_dropouts|floatformat:0 }}/{{ u.total_records }}</span>
+                        {% else %}<span class="badge badge-info">—</span>{% endif %}
+                    </td>
+                    <td style="text-align:right;display:flex;gap:6px;justify-content:flex-end;">
+                        {% if u.pdf_report %}
+                        <a href="{{ u.pdf_report.url }}" target="_blank" class="btn btn-outline" style="font-size:10.5px;padding:5px 12px;">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </a>
+                        {% endif %}
+                        {% if u.notebook_file %}
+                        <a href="{{ u.notebook_file.url }}" download class="btn btn-outline" style="font-size:10.5px;padding:5px 12px;">
+                            <i class="fa-solid fa-book"></i> .ipynb
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:32px;color:var(--text-muted);">
+        <i class="fa-solid fa-inbox" style="font-size:32px;margin-bottom:10px;opacity:.3;"></i>
+        <p style="font-size:12px;">Ningún análisis ejecutado aún. Sube un CSV o consulta una API para comenzar.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ----- LEAFLET MAP -----
+    const map = L.map('colombia-map').setView([4.5709, -74.2973], 5.5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const density = {{ density_json|safe }};
+    const regionList = document.getElementById('region-list');
+
+    density.forEach(pt => {
+        const radius = Math.max(pt.intensity * 1200, 15000);
+        const col = pt.intensity > 35 ? '#ef4444' : pt.intensity > 20 ? '#f59e0b' : '#10b981';
+
+        L.circle(pt.coords, {
+            color: col, fillColor: col, fillOpacity: 0.35, radius: radius
+        }).addTo(map).bindPopup(`
+            <b style="font-family:Inter">${pt.name}</b><br>
+            Tasa de Riesgo: <b style="color:${col}">${pt.intensity}%</b><br>
+            Alertas: ${pt.dropouts} / ${pt.total} estudiantes
+        `);
+
+        // Region list cards
+        regionList.innerHTML += `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(15,23,42,0.7);border-radius:8px;border:1px solid var(--border);">
+                <div>
+                    <div style="font-size:11.5px;font-weight:600;color:var(--text-main);">${pt.name}</div>
+                    <div style="font-size:10px;color:var(--text-muted);">${pt.dropouts} alertas · ${pt.total} total</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:16px;font-weight:800;color:${col};">${pt.intensity}%</div>
+                    <div style="height:4px;width:60px;background:rgba(255,255,255,0.06);border-radius:4px;margin-top:4px;">
+                        <div style="height:100%;width:${Math.min(pt.intensity,100)}%;background:${col};border-radius:4px;"></div>
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    // ----- UPLOAD SPINNER -----
+    document.getElementById('upload-spinner').style.display = 'none';
+</script>
+{% endblock %}

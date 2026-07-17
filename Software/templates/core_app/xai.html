@@ -1,0 +1,129 @@
+{% extends "core_app/base.html" %}
+{% block title %}Explicabilidad XAI{% endblock %}
+{% block page_title %}🛡️ Explicabilidad Global — SHAP / Feature Importance{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Explicabilidad Global con SHAP / Feature Importance</h2>
+    <p>Explicabilidad e interpretabilidad del modelo para justificar cada predicción con transparencia institucional.</p>
+</div>
+
+<div class="grid-21 fade-in" style="margin-bottom:20px;">
+    <div class="card">
+        <div class="section-title">📊 Importancia de Variables Predictoras (Feature Importance)</div>
+        <div class="chart-box">
+            <canvas id="shapChart" height="320"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">💡 Interpretación del Modelo</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            {% for item in interpretaciones %}
+            <div style="padding:14px;background:rgba(15,23,42,0.7);border-radius:10px;border-left:3px solid {{ item.color }};">
+                <div style="font-size:12px;font-weight:700;color:{{ item.color }};margin-bottom:5px;">{{ item.variable }}</div>
+                <div style="font-size:11.5px;color:var(--text-muted);line-height:1.5;">{{ item.texto }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- SHAP Explanation conceptual -->
+<div class="grid-3 fade-in-2">
+    <div class="card">
+        <div style="text-align:center;padding:10px 0 16px;">
+            <div style="font-size:32px;margin-bottom:10px;">⚡</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px;">¿Qué es SHAP?</div>
+            <div style="font-size:11.5px;color:var(--text-muted);line-height:1.5;">
+                <b>SH</b>apley <b>A</b>dditive ex<b>P</b>lanations — método matemático basado en teoría de juegos que cuantifica la contribución de cada variable a la predicción final del modelo.
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div style="text-align:center;padding:10px 0 16px;">
+            <div style="font-size:32px;margin-bottom:10px;">🎯</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px;">Transparencia en Políticas</div>
+            <div style="font-size:11.5px;color:var(--text-muted);line-height:1.5;">
+                La explicabilidad del modelo permite a las IES justificar ante el Ministerio de Educación cómo se tomaron las decisiones de intervención estudiantil.
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div style="text-align:center;padding:10px 0 16px;">
+            <div style="font-size:32px;margin-bottom:10px;">📐</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:8px;">Equidad Algorítmica</div>
+            <div style="font-size:11.5px;color:var(--text-muted);line-height:1.5;">
+                El análisis de importancia de variables garantiza que el modelo no discrimina por género o etnia, sino que se basa en factores académicos y socioeconómicos objetivos.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Variable Impact Table -->
+<div class="card fade-in-3" style="margin-top:20px;">
+    <div class="section-title">📋 Tabla de Impacto por Variable</div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Variable Predictora</th><th style="text-align:center;">Importancia (SHAP)</th>
+                    <th>Barra de Importancia</th><th style="text-align:center;">Dirección del Riesgo</th>
+                </tr>
+            </thead>
+            <tbody id="shap-table"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const shapData = {{ shap_json|safe }};
+const maxVal   = Math.max(...shapData.values);
+const COLORS   = ['#ef4444','#f59e0b','#818cf8','#38bdf8','#10b981','#f97316','#a78bfa','#34d399','#fbbf24','#60a5fa'];
+
+// Horizontal bar chart
+new Chart(document.getElementById('shapChart'), {
+    type: 'bar',
+    data: {
+        labels: shapData.labels,
+        datasets: [{
+            label: 'Importancia SHAP',
+            data: shapData.values,
+            backgroundColor: shapData.values.map((_,i) => COLORS[i % COLORS.length] + 'BB'),
+            borderColor:     shapData.values.map((_,i) => COLORS[i % COLORS.length]),
+            borderWidth: 1,
+            borderRadius: 5,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }, grid: { display: false } }
+        }
+    }
+});
+
+// SHAP Table
+const tbody = document.getElementById('shap-table');
+shapData.labels.forEach((lbl, i) => {
+    const pct = ((shapData.values[i] / maxVal) * 100).toFixed(1);
+    const col = COLORS[i % COLORS.length];
+    const dirIconos = i < 2 ? '<span style="color:#ef4444;">↑ Aumenta riesgo</span>' : i < 4 ? '<span style="color:#f59e0b;">↑ Aumenta riesgo</span>' : '<span style="color:#10b981;">↓ Reduce riesgo</span>';
+    tbody.innerHTML += `
+        <tr>
+            <td style="color:var(--text-muted);">${i+1}</td>
+            <td class="bold">${lbl}</td>
+            <td style="text-align:center;font-family:monospace;color:${col};">${shapData.values[i].toFixed(4)}</td>
+            <td>
+                <div class="risk-bar-track" style="max-width:200px;">
+                    <div class="risk-bar-fill" style="width:${pct}%;background:${col};"></div>
+                </div>
+            </td>
+            <td style="text-align:center;font-size:11.5px;">${dirIconos}</td>
+        </tr>`;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "core_app/base.html" %}
+{% block title %}Comparación de Modelos{% endblock %}
+{% block page_title %}⚖️ Comparativa de Desempeño — Algoritmos ML{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Comparativa de Desempeño y Métricas ML</h2>
+    <p>Evaluación dinámica de los {{ metrics|length }} algoritmos entrenados sobre {{ n_records|default:"la base" }} registros de estudiantes reales.</p>
+</div>
+
+<!-- Active Model Card -->
+<div class="card fade-in" style="margin-bottom:22px;background:linear-gradient(135deg,rgba(56,189,248,0.05),rgba(129,140,248,0.08));border-color:rgba(56,189,248,0.2);">
+    <div style="display:flex;flex-col md:flex-row;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+        <div>
+            <span style="display:inline-block;padding:3px 10px;background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);border-radius:20px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">MODELO EN PRODUCCIÓN</span>
+            <div style="font-size:20px;font-weight:800;color:var(--text-main);">{{ active_name }} Classifier</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Algoritmo con mayor F1-Score ponderado tras ingeniería de características y validación cruzada.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
+            {% for label, val in active_m.items %}
+            <div style="padding:14px 20px;background:rgba(15,23,42,0.7);border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:22px;font-weight:800;color:var(--text-main);">{{ val }}%</div>
+                <div style="font-size:9.5px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">{{ label }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Chart + Table -->
+<div class="grid-2 fade-in-2" style="margin-bottom:20px;">
+    <div class="card">
+        <div class="section-title">📊 Visualización Comparativa de Métricas</div>
+        <div class="chart-box">
+            <canvas id="metricsChart" height="280"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">📋 Tabla Comparativa de Algoritmos</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Algoritmo</th><th style="text-align:center;">Accuracy</th>
+                        <th style="text-align:center;">Precision</th><th style="text-align:center;">Recall</th>
+                        <th style="text-align:center;">F1-Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, m in metrics.items %}
+                    <tr {% if name == active_name %}style="background:rgba(56,189,248,0.04);"{% endif %}>
+                        <td>
+                            <span style="font-weight:700;color:{% if name == active_name %}#38bdf8{% else %}var(--text-main){% endif %};">
+                                {{ name }}{% if name == active_name %} <span class="badge badge-info" style="font-size:8.5px;margin-left:4px;">ACTIVO</span>{% endif %}
+                            </span>
+                        </td>
+                        <td style="text-align:center;font-weight:600;color:{% if name == active_name %}#38bdf8{% else %}var(--text-dim){% endif %};">{{ m.accuracy }}%</td>
+                        <td style="text-align:center;">{{ m.precision }}%</td>
+                        <td style="text-align:center;">{{ m.recall }}%</td>
+                        <td style="text-align:center;font-weight:700;color:#10b981;">{{ m.f1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Radar Chart -->
+<div class="card fade-in-3">
+    <div class="section-title">🕸️ Análisis Radar — Perfil Multidimensional por Algoritmo</div>
+    <div style="max-width:480px;margin:0 auto;">
+        <canvas id="radarChart" height="300"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const chartData = {{ chart_json|safe }};
+const COLORS = ['#38bdf8','#818cf8','#10b981','#f59e0b','#ef4444'];
+
+// Grouped bar chart
+new Chart(document.getElementById('metricsChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Accuracy','Precision','Recall','F1-Score'],
+        datasets: chartData.labels.map((lbl,i) => ({
+            label: lbl,
+            data: [chartData.accuracy[i], chartData.precision[i], chartData.recall[i], chartData.f1[i]],
+            backgroundColor: COLORS[i] + '99',
+            borderColor: COLORS[i],
+            borderWidth: 1,
+            borderRadius: 5,
+        }))
+    },
+    options: {
+        plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+        scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { min: 0, max: 100, ticks: { color: '#64748b', callback: v => v + '%' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+    }
+});
+
+// Radar chart
+new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+        labels: ['Accuracy','Precision','Recall','F1-Score'],
+        datasets: chartData.labels.map((lbl,i) => ({
+            label: lbl,
+            data: [chartData.accuracy[i], chartData.precision[i], chartData.recall[i], chartData.f1[i]],
+            borderColor: COLORS[i],
+            backgroundColor: COLORS[i] + '22',
+            pointBackgroundColor: COLORS[i],
+            borderWidth: 2,
+        }))
+    },
+    options: {
+        plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+        scales: {
+            r: {
+                min: 0, max: 100,
+                ticks: { color: '#475569', backdropColor: 'transparent', font: { size: 10 } },
+                grid: { color: 'rgba(255,255,255,0.06)' },
+                angleLines: { color: 'rgba(255,255,255,0.06)' },
+                pointLabels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

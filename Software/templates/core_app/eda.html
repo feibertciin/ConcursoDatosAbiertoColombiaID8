@@ -1,0 +1,179 @@
+{% extends "core_app/base.html" %}
+{% block title %}Análisis Exploratorio{% endblock %}
+{% block page_title %}🔍 Análisis Exploratorio de Datos{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Análisis Exploratorio de Datos Integrados</h2>
+    <p>Explore los microdatos resultantes de la unificación de SNIES, DANE y OLE con filtros interactivos.</p>
+</div>
+
+{% if no_data %}
+<div class="alert alert-danger" style="margin-top:16px;">
+    <i class="fa-solid fa-circle-exclamation"></i> No se encontró el archivo <code>processed_students.csv</code>. Ejecuta el pipeline ETL desde los cuadernos Jupyter para generar los datos procesados.
+</div>
+{% else %}
+
+<!-- Filter + KPIs -->
+<div class="grid-12 fade-in" style="margin-bottom:20px;">
+    <div class="card" style="align-self:start;">
+        <div class="section-title">⚙️ Filtrar por Programa</div>
+        <form method="get">
+            <div class="form-group">
+                <label class="form-label">Programa Académico</label>
+                <select name="programa" class="form-control" onchange="this.form.submit()">
+                    <option value="TODOS" {% if selected == "TODOS" %}selected{% endif %}>TODOS</option>
+                    {% for p in programas %}
+                    <option value="{{ p }}" {% if selected == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+        <!-- Mini Stats -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(15,23,42,0.7);border-radius:8px;border:1px solid var(--border);">
+                <span style="font-size:11px;color:var(--text-muted);">Total Registros</span>
+                <span style="font-size:16px;font-weight:800;color:#38bdf8;">{{ total_records }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(15,23,42,0.7);border-radius:8px;border:1px solid var(--border);">
+                <span style="font-size:11px;color:var(--text-muted);">Tasa Global Deserción</span>
+                <span style="font-size:16px;font-weight:800;color:#ef4444;">{{ tasa_global }}%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(15,23,42,0.7);border-radius:8px;border:1px solid var(--border);">
+                <span style="font-size:11px;color:var(--text-muted);">Promedio Acumulado</span>
+                <span style="font-size:16px;font-weight:800;color:#10b981;">{{ promedio_avg }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">📊 Muestra de Microdatos Unificados (SNIES · DANE)</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th><th>Programa</th><th>Estrato</th>
+                        <th>Prom.</th><th>Saber11</th><th>Reprobadas</th><th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in sample %}
+                    <tr>
+                        <td class="bold">{{ r.nombre|default:"—" }}</td>
+                        <td>{{ r.programa_academico|truncatechars:22 }}</td>
+                        <td style="text-align:center;">{{ r.estrato_socioeconomico }}</td>
+                        <td style="text-align:center;font-weight:600;color:{% if r.promedio_acumulado < 3.0 %}#ef4444{% else %}#10b981{% endif %}">{{ r.promedio_acumulado }}</td>
+                        <td style="text-align:center;font-family:monospace;">{{ r.puntaje_saber11|floatformat:0 }}</td>
+                        <td style="text-align:center;color:{% if r.materias_reprobadas > 0 %}#f59e0b{% else %}var(--text-muted){% endif %};">{{ r.materias_reprobadas }}</td>
+                        <td>
+                            {% if r.desertor == 1 %}
+                            <span class="badge badge-danger">ALERTA</span>
+                            {% else %}
+                            <span class="badge badge-success">ESTABLE</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Sin registros</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid-2 fade-in-2" style="margin-bottom:20px;">
+    <div class="card">
+        <div class="chart-label">Saber 11 vs. Promedio Universitario (Riesgo en Rojo)</div>
+        <div class="chart-box">
+            <canvas id="scatterChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="chart-label">Tasa de Deserción por Estrato Socioeconómico (%)</div>
+        <div class="chart-box">
+            <canvas id="estratoChart" height="250"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in-3">
+    <div class="chart-label">Tasa de Deserción por Programa Académico (%)</div>
+    <div class="chart-box">
+        <canvas id="progChart" height="150"></canvas>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if not no_data %}
+<script>
+const scatter = {{ scatter_json|safe }};
+const estrato = {{ estrato_json|safe }};
+const prog    = {{ prog_json|safe }};
+
+const chartDefaults = {
+    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+    scales: {
+        x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+};
+
+// Scatter chart
+new Chart(document.getElementById('scatterChart'), {
+    type: 'scatter',
+    data: {
+        datasets: [
+            { label: 'En Riesgo', data: scatter.riesgo, backgroundColor: 'rgba(239,68,68,0.65)', pointRadius: 4 },
+            { label: 'Estable',   data: scatter.seguro, backgroundColor: 'rgba(56,189,248,0.4)',  pointRadius: 3 },
+        ]
+    },
+    options: { ...chartDefaults,
+        scales: {
+            x: { title: { display: true, text: 'Puntaje Saber 11', color: '#64748b' }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+            y: { title: { display: true, text: 'Promedio Acumulado', color: '#64748b' }, ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+    }
+});
+
+// Estrato chart
+new Chart(document.getElementById('estratoChart'), {
+    type: 'bar',
+    data: {
+        labels: estrato.labels.map(l => `Estrato ${l}`),
+        datasets: [{
+            label: 'Tasa Deserción (%)',
+            data: estrato.tasa,
+            backgroundColor: ['#ef4444','#f97316','#f59e0b','#38bdf8','#10b981','#818cf8'],
+            borderRadius: 6,
+        }]
+    },
+    options: { ...chartDefaults, plugins: { legend: { display: false } } }
+});
+
+// Programa chart
+new Chart(document.getElementById('progChart'), {
+    type: 'bar',
+    data: {
+        labels: prog.labels,
+        datasets: [{
+            label: 'Deserción (%)',
+            data: prog.values,
+            backgroundColor: 'rgba(56,189,248,0.6)',
+            borderColor: '#38bdf8',
+            borderWidth: 1,
+            borderRadius: 5,
+        }]
+    },
+    options: { ...chartDefaults,
+        indexAxis: 'y',
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

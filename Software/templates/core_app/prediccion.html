@@ -1,0 +1,318 @@
+{% extends "core_app/base.html" %}
+{% block title %}Predicción de Riesgo{% endblock %}
+{% block page_title %}🎯 Inferencia y Predicción de Riesgo Individual{% endblock %}
+
+{% block extra_styles %}
+.tab-btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    transition: all 0.18s;
+}
+.tab-btn.active { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.3); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <h2>Inferencia y Predicción de Riesgo Individual</h2>
+    <p>Complete las variables del estudiante para evaluar la probabilidad de deserción en tiempo real mediante los modelos entrenados.</p>
+</div>
+
+<div class="grid-21 fade-in">
+    <!-- FORM PANEL -->
+    <div class="card">
+        <div class="section-title">📝 Datos del Estudiante</div>
+        <!-- Tab Switcher -->
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+            <button class="tab-btn active" onclick="switchTab('academico',this)">📚 Académico</button>
+            <button class="tab-btn" onclick="switchTab('socioeconomico',this)">💰 Socioeconómico</button>
+            <button class="tab-btn" onclick="switchTab('personal',this)">👤 Personal</button>
+        </div>
+
+        <div id="tab-academico" class="tab-panel active">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Programa Académico</label>
+                    <select id="f-programa" class="form-control">
+                        {% for p in programas %}<option>{{ p }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Promedio Acumulado</label>
+                    <input type="range" id="f-promedio" min="1.0" max="5.0" step="0.1" value="3.4" oninput="document.getElementById('v-prom').innerText=this.value" style="width:100%;accent-color:#38bdf8;margin-top:8px;">
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                        <span style="font-size:10px;color:var(--text-muted)">1.0</span>
+                        <span id="v-prom" style="font-size:14px;font-weight:700;color:#38bdf8">3.4</span>
+                        <span style="font-size:10px;color:var(--text-muted)">5.0</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Puntaje Saber 11</label>
+                    <input type="range" id="f-saber11" min="100" max="500" step="5" value="310" oninput="document.getElementById('v-s11').innerText=this.value" style="width:100%;accent-color:#818cf8;margin-top:8px;">
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                        <span style="font-size:10px;color:var(--text-muted)">100</span>
+                        <span id="v-s11" style="font-size:14px;font-weight:700;color:#818cf8">310</span>
+                        <span style="font-size:10px;color:var(--text-muted)">500</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Materias Reprobadas</label>
+                    <input type="number" id="f-reprobadas" min="0" max="10" value="0" class="form-control">
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-socioeconomico" class="tab-panel">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Estrato Socioeconómico</label>
+                    <select id="f-estrato" class="form-control">
+                        <option value="1">Estrato 1</option>
+                        <option value="2">Estrato 2</option>
+                        <option value="3" selected>Estrato 3</option>
+                        <option value="4">Estrato 4</option>
+                        <option value="5">Estrato 5</option>
+                        <option value="6">Estrato 6</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Colegio</label>
+                    <select id="f-colegio" class="form-control">
+                        <option>OFICIAL</option>
+                        <option>NO OFICIAL</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Ingresos Familiares Mensuales (COP)</label>
+                    <input type="range" id="f-ingreso" min="500000" max="15000000" step="100000" value="2200000" oninput="document.getElementById('v-ing').innerText='$'+parseInt(this.value).toLocaleString('es-CO')" style="width:100%;accent-color:#10b981;margin-top:8px;">
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                        <span style="font-size:10px;color:var(--text-muted)">$500K</span>
+                        <span id="v-ing" style="font-size:14px;font-weight:700;color:#10b981">$2.200.000</span>
+                        <span style="font-size:10px;color:var(--text-muted)">$15M</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-personal" class="tab-panel">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Estudiante</label>
+                    <input type="text" id="f-nombre" class="form-control" value="Andrea Carolina Restrepo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Género</label>
+                    <select id="f-genero" class="form-control">
+                        <option>FEMENINO</option>
+                        <option>MASCULINO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Departamento de Origen</label>
+                    <select id="f-dept" class="form-control">
+                        {% for d in depts %}<option>{{ d }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Edad</label>
+                    <input type="range" id="f-edad" min="16" max="50" value="19" oninput="document.getElementById('v-edad').innerText=this.value" style="width:100%;accent-color:#f59e0b;margin-top:8px;">
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                        <span style="font-size:10px;color:var(--text-muted)">16</span>
+                        <span id="v-edad" style="font-size:14px;font-weight:700;color:#f59e0b">19</span>
+                        <span style="font-size:10px;color:var(--text-muted)">50</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4" style="display:flex;gap:10px;border-top:1px solid var(--border);padding-top:16px;">
+            <button id="btn-predict" class="btn btn-primary" style="flex:1;" onclick="runPrediction()">
+                <span class="spinner" id="pred-spinner"></span>
+                <i class="fa-solid fa-brain" id="pred-icon"></i>
+                <span id="pred-text">Calcular Riesgo de Deserción</span>
+            </button>
+            <button class="btn btn-outline" onclick="resetForm()">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- RESULT PANEL -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+        <!-- Risk Result -->
+        <div class="card" id="result-card">
+            <div class="section-title">📊 Resultado del Diagnóstico</div>
+            <div id="result-placeholder" style="text-align:center;padding:32px 0;color:var(--text-muted);">
+                <i class="fa-solid fa-circle-dashed" style="font-size:36px;opacity:.2;margin-bottom:12px;"></i>
+                <p style="font-size:12.5px;">Complete el formulario y presione<br>"Calcular Riesgo" para ver el diagnóstico.</p>
+            </div>
+            <div id="result-content" style="display:none;">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div id="result-icon" style="font-size:40px;margin-bottom:10px;"></div>
+                    <div id="result-level" style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;"></div>
+                    <div id="result-prob" style="font-size:36px;font-weight:900;"></div>
+                    <div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">Probabilidad de Deserción</div>
+                </div>
+                <div class="risk-bar-track" style="margin-bottom:16px;">
+                    <div id="risk-bar" class="risk-bar-fill" style="width:0%;"></div>
+                </div>
+                <div id="result-action" class="alert" style="font-size:12px;"></div>
+            </div>
+        </div>
+
+        <!-- Reference Averages -->
+        <div class="card">
+            <div class="section-title">📈 Promedio de Estudiantes Permanentes</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                    <span style="color:var(--text-muted);">Promedio Acumulado (ref.)</span>
+                    <span style="font-weight:700;color:#10b981;">{{ avg_prom }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                    <span style="color:var(--text-muted);">Reprobadas (ref. media)</span>
+                    <span style="font-weight:700;color:#10b981;">{{ avg_rep }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                    <span style="color:var(--text-muted);">Saber 11 (ref. media)</span>
+                    <span style="font-weight:700;color:#10b981;">{{ avg_s11 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison chart -->
+        <div class="card">
+            <div class="section-title">📉 Diferencial vs. Estudiante Promedio</div>
+            <div class="chart-box">
+                <canvas id="compareChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const AVG = { promedio: {{ avg_prom }}, reprobadas: {{ avg_rep }}, saber11: {{ avg_s11 }} };
+    let compareChart = null;
+
+    function switchTab(id, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function resetForm() {
+        document.getElementById('f-promedio').value = 3.4;
+        document.getElementById('v-prom').innerText = '3.4';
+        document.getElementById('f-saber11').value = 310;
+        document.getElementById('v-s11').innerText = '310';
+        document.getElementById('f-reprobadas').value = 0;
+        document.getElementById('f-estrato').value = 3;
+        document.getElementById('f-ingreso').value = 2200000;
+        document.getElementById('v-ing').innerText = '$2.200.000';
+        document.getElementById('f-edad').value = 19;
+        document.getElementById('v-edad').innerText = '19';
+        document.getElementById('result-content').style.display = 'none';
+        document.getElementById('result-placeholder').style.display = 'block';
+    }
+
+    async function runPrediction() {
+        const spinner = document.getElementById('pred-spinner');
+        const icon    = document.getElementById('pred-icon');
+        const text    = document.getElementById('pred-text');
+        spinner.style.display = 'inline-block';
+        icon.style.display    = 'none';
+        text.innerText = 'Calculando...';
+
+        const payload = {
+            programa_academico:   document.getElementById('f-programa').value,
+            promedio_acumulado:   parseFloat(document.getElementById('f-promedio').value),
+            puntaje_saber11:      parseFloat(document.getElementById('f-saber11').value),
+            materias_reprobadas:  parseInt(document.getElementById('f-reprobadas').value),
+            estrato_socioeconomico: parseInt(document.getElementById('f-estrato').value),
+            tipo_colegio:         document.getElementById('f-colegio').value,
+            ingreso_familiar:     parseFloat(document.getElementById('f-ingreso').value),
+            genero:               document.getElementById('f-genero').value,
+            departamento_origen:  document.getElementById('f-dept').value,
+            edad:                 parseInt(document.getElementById('f-edad').value),
+        };
+
+        try {
+            const res = await fetch('/api/predecir/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                document.getElementById('result-placeholder').style.display = 'none';
+                document.getElementById('result-content').style.display = 'block';
+                document.getElementById('result-icon').innerText = data.icono;
+                document.getElementById('result-level').innerText  = `Nivel de Riesgo: ${data.nivel}`;
+                document.getElementById('result-level').style.color = data.color;
+                document.getElementById('result-prob').innerText = `${data.probabilidad}%`;
+                document.getElementById('result-prob').style.color = data.color;
+
+                const bar = document.getElementById('risk-bar');
+                bar.style.width = '0%';
+                bar.style.background = data.color;
+                setTimeout(() => { bar.style.width = data.probabilidad + '%'; }, 50);
+
+                const actionEl = document.getElementById('result-action');
+                actionEl.innerText = data.accion;
+                actionEl.className = 'alert';
+                if (data.nivel === 'ALTO')   actionEl.classList.add('alert-danger');
+                else if (data.nivel === 'MEDIO') actionEl.classList.add('alert-warning' , 'alert-danger');
+                else actionEl.classList.add('alert-success');
+
+                // Comparison chart
+                const comp = data.comparativo;
+                const labels = ['Promedio Acum.', 'Reprobadas', 'Saber 11 (/100)'];
+                const estudianteVals = [
+                    comp.estudiante.promedio,
+                    comp.estudiante.reprobadas,
+                    comp.estudiante.saber11 / 100
+                ];
+                const avgVals = [
+                    comp.promedio_permanentes.promedio,
+                    comp.promedio_permanentes.reprobadas,
+                    comp.promedio_permanentes.saber11 / 100
+                ];
+
+                if (compareChart) compareChart.destroy();
+                compareChart = new Chart(document.getElementById('compareChart'), {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: document.getElementById('f-nombre').value, data: estudianteVals, backgroundColor: 'rgba(56,189,248,0.7)', borderRadius: 5 },
+                            { label: 'Prom. Permanentes', data: avgVals, backgroundColor: 'rgba(16,185,129,0.5)', borderRadius: 5 },
+                        ]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+                        scales: {
+                            x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                            y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+                        }
+                    }
+                });
+            } else {
+                alert('Error en predicción: ' + (data.error || 'Desconocido'));
+            }
+        } catch(e) {
+            alert('Error de conexión: ' + e.message);
+        } finally {
+            spinner.style.display = 'none';
+            icon.style.display    = '';
+            text.innerText = 'Calcular Riesgo de Deserción';
+        }
+    }
+</script>
+{% endblock %}
