@@ -211,7 +211,7 @@ if menu == "🚀 Inicio":
 import requests
 import pandas as pd
 
-API_ENDPOINT = "https://www.datos.gov.co/resource/ddau-8cy9.json"
+API_ENDPOINT = "https://www.datos.gov.co/resource/upr9-nkiz.json"
 
 def cargar_datos_abiertos(limit=5000):
     headers = {"Accept": "application/json"}
