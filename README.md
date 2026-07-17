@@ -22,6 +22,7 @@ A continuación se presentan los accesos directos principales a las aplicaciones
 | **Streamlit App**        | Aplicación Cloud | Dashboard interactivo con georeferenciación, mapa de calor y motor prescriptivo regional. | [Lanzar App en Streamlit Cloud](https://concursodatosabiertocolombiaid8.streamlit.app/)     |
 | **Código en GitHub**    | Repositorio       | Código fuente del framework, landing page y configuraciones de MLOps.                     | [Ver Repositorio en GitHub](https://feibertciin.github.io/ConcursoDatosAbiertoColombiaID8/) |
 | **Engine de Inferencia** | Django Software   | Servidor web local de predicciones masivas por CSV/API con exportación de reportes PDF.   | [Explorar Módulo (/Software)](Software/)                                                   |
+| **Presentación** | Soporte   | Presentación del proyecto.   | [Explorar Módulo (/Software)]([Software](https://drive.google.com/file/d/1SPHocT8hiw10sWt7krW29HEDCH2NYCKb/view?usp=drive_link)/)                                                   |
 
 ---
 
