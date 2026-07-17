@@ -25,7 +25,7 @@ A continuación se presentan los accesos directos principales a las aplicaciones
 | **Presentación** | Soporte   | Presentación del proyecto.   | [Ver](https://drive.google.com/file/d/1SPHocT8hiw10sWt7krW29HEDCH2NYCKb/view?usp=drive_link)                                                   |
 | **Soporte Técnico** | Documento   | Informe del proyecto.   | [Ver](https://docs.google.com/document/d/140gnSxJ5CotqG7DWM9EKO46qHcn_PNh2/edit?usp=drive_link&ouid=107643151803452107423&rtpof=true&sd=true)                                                   |
 
-https://pharmaceuticals-contest-sizes-phil.trycloudflare.com/
+
 ---
 
 ## 🏗️ Arquitectura del Sistema
